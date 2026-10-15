@@ -3,38 +3,35 @@ package co.tiagoaguiar.loteriacomposedev
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -42,7 +39,8 @@ import co.tiagoaguiar.loteriacomposedev.ui.component.LoItemType
 import co.tiagoaguiar.loteriacomposedev.ui.component.LoNumberTextField
 import co.tiagoaguiar.loteriacomposedev.ui.theme.Green
 import co.tiagoaguiar.loteriacomposedev.ui.theme.LoteriaTheme
-
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,6 +114,9 @@ fun FormScreen(){
     ){
         var qtdNumbers by remember { mutableStateOf("") }
         var qtdBets by remember { mutableStateOf("")}
+        var result by remember { mutableStateOf("")}
+        val snackbarHostState by remember { mutableStateOf(SnackbarHostState()) }
+        val scope = rememberCoroutineScope()
 
         Column (
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -150,11 +151,53 @@ fun FormScreen(){
                 }
             }
 
-            OutlinedButton( onClick = { }) {
+            OutlinedButton(
+                enabled = qtdNumbers.isNotEmpty() && qtdBets.isNotEmpty(),
+                onClick = {
+                    if (qtdBets.toInt() < 1 || qtdBets.toInt() > 10) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Máximo de apostas permitido: 10")
+                        }
+                    } else if (qtdNumbers.toInt() < 1 || qtdNumbers.toInt() > 15) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Números devem ser de 6 à 15")
+                        }
+                    } else {
+                            result = ""
+                            for (i in  1.. qtdBets.toInt()) {
+                                result += "[$i]"
+                                result += numberGenerator(qtdNumbers)
+                                result += "\n\n"
+                            }
+                    }
+                }) {
                 Text(stringResource(id = R.string.bets_generate))
             }
+
+            Text(text = result)
+        }
+
+        Box {
+            SnackbarHost(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                hostState = snackbarHostState
+            )
         }
     }
+}
+
+private fun numberGenerator(qtd: String): String {
+    val numbers = mutableSetOf<Int>()
+
+    while (true) {
+        val n = Random.nextInt(60)
+        numbers.add(n + 1)
+        if (numbers.size == qtd.toInt()) {
+            break
+        }
+    }
+
+    return  numbers.joinToString(" - ")
 }
 
 private fun validateInput(input: String): String {
