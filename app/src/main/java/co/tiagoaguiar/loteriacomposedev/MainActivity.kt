@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -41,8 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import co.tiagoaguiar.loteriacomposedev.model.MainItem
 import co.tiagoaguiar.loteriacomposedev.ui.component.LoItemType
 import co.tiagoaguiar.loteriacomposedev.ui.component.LoNumberTextField
+import co.tiagoaguiar.loteriacomposedev.ui.theme.BlueColor
 import co.tiagoaguiar.loteriacomposedev.ui.theme.Green
 import co.tiagoaguiar.loteriacomposedev.ui.theme.LoteriaTheme
 import kotlinx.coroutines.launch
@@ -80,16 +84,25 @@ enum class AppRouter(val route: String) {
 
 @Composable
 fun HomeScreen(onClick: () -> Unit){
+    val mainItems = mutableListOf(
+        MainItem(1, "Mega Sena",Green, R.drawable.trevo ),
+            MainItem(2, "Quina", BlueColor, R.drawable.trevo_blue )
+    )
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ){
-        LotteryaItem("Mega Sena", onClick = onClick )
+        LazyColumn {
+            items(mainItems) {
+                LotteryaItem(it, onClick = onClick)
+            }
+        }
+
     }
 }
 
 @Composable
-fun LotteryaItem(name: String, onClick: () -> Unit) {
+fun LotteryaItem(item: MainItem, onClick: () -> Unit) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
@@ -103,9 +116,10 @@ fun LotteryaItem(name: String, onClick: () -> Unit) {
                 .wrapContentSize()
         ){
          LoItemType(
-             name = name,
+             name = item.name,
+             icon = item.icon,
              color = Color.White,
-             bgColor = Green
+             bgColor = item.color,
          )
         }
     }
@@ -137,7 +151,7 @@ fun FormScreen(){
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.verticalScroll(scrollState)
         ) {
-       LoItemType(name = "Mega Sena")
+            LoItemType(name = "Mega Sena")
 
             Text(
                 text = stringResource(id = R.string.announcement),
