@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -92,7 +95,10 @@ fun HomeScreen(onClick: () -> Unit){
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ){
-        LazyColumn {
+        LazyVerticalGrid(
+            verticalArrangement = Arrangement.SpaceAround,
+            columns = GridCells.Fixed(2)
+        ) {
             items(mainItems) {
                 LotteryaItem(it, onClick = onClick)
             }
