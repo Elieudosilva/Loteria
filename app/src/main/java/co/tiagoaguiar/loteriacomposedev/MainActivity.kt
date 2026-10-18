@@ -61,225 +61,250 @@ class MainActivity : ComponentActivity() {
         setContent {
             LoteriaTheme {
                 val navController = rememberNavController()
-                
+
                 NavHost(
                     navController = navController,
                     startDestination = AppRouter.HOME.route
-                ){
-                    composable(AppRouter.HOME.route){
-                        HomeScreen{
-                           navController.navigate(AppRouter.FORM.route)
+                ) {
+                    composable(AppRouter.HOME.route) {
+                        HomeScreen { item ->
+                            val router = when (item.id) {
+                                1 -> AppRouter.MEGA_SENA
+                                2 -> AppRouter.QUINA
+                                else -> AppRouter.HOME
+                            }
+                            navController.navigate(router.route)
                         }
                     }
 
-                    composable(AppRouter.FORM.route){
-                        FormScreen()
+                    composable(AppRouter.MEGA_SENA.route) {
+                        MegaScreen()
+                    }
+
+                    composable(AppRouter.QUINA.route) {
+                        QuinaScreen()
                     }
                 }
             }
         }
     }
-}
-enum class AppRouter(val route: String) {
-    HOME("home"),
-    FORM("form")
-}
 
-@Composable
-fun HomeScreen(onClick: () -> Unit){
-    val mainItems = mutableListOf(
-        MainItem(1, "Mega Sena",Green, R.drawable.trevo ),
-            MainItem(2, "Quina", BlueColor, R.drawable.trevo_blue )
-    )
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ){
-        LazyVerticalGrid(
-            verticalArrangement = Arrangement.SpaceAround,
-            columns = GridCells.Fixed(2)
-        ) {
-            items(mainItems) {
-                LotteryaItem(it, onClick = onClick)
-            }
-        }
+    enum class AppRouter(val route: String) {
+        HOME("home"),
+        MEGA_SENA("megasena"),
+        QUINA("quina")
 
     }
-}
 
-@Composable
-fun LotteryaItem(item: MainItem, onClick: () -> Unit) {
-    Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        modifier = Modifier
-            .wrapContentSize()
-            .clickable{
-                onClick()
+    @Composable
+    fun HomeScreen(onClick: (MainItem) -> Unit) {
+        val mainItems = mutableListOf(
+            MainItem(1, "Mega Sena", Green, R.drawable.trevo),
+            MainItem(2, "Quina", BlueColor, R.drawable.trevo_blue)
+        )
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            LazyVerticalGrid(
+                verticalArrangement = Arrangement.SpaceAround,
+                columns = GridCells.Fixed(2)
+            ) {
+                items(mainItems) {
+                    LotteryaItem(it) {
+                        onClick(it)
+                    }
+                }
             }
-    ) {
-        Column(
+
+        }
+    }
+
+    @Composable
+    fun LotteryaItem(item: MainItem, onClick: () -> Unit) {
+        Card(
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier = Modifier
                 .wrapContentSize()
-        ){
-         LoItemType(
-             name = item.name,
-             icon = item.icon,
-             color = Color.White,
-             bgColor = item.color,
-         )
+                .clickable {
+                    onClick()
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .wrapContentSize()
+            ) {
+                LoItemType(
+                    name = item.name,
+                    icon = item.icon,
+                    color = Color.White,
+                    bgColor = item.color,
+                )
+            }
+        }
+
+    }
+
+    @Composable
+    fun QuinaScreen() {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color.Red
+        ) {
+            Text("Olá")
         }
     }
 
-}
 
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun FormScreen(){
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ){
-        val errorBest = stringResource(id = R.string.error_bets)
-        val errorNumbers = stringResource(id = R.string.error_numbers)
-
-        var qtdNumbers by remember { mutableStateOf("") }
-        var qtdBets by remember { mutableStateOf("")}
-        var result by remember { mutableStateOf("")}
-        var showAlertDialog by remember { mutableStateOf(false) }
-
-        val snackbarHostState by remember { mutableStateOf(SnackbarHostState()) }
-        val scope = rememberCoroutineScope()
-        val keyboardController = LocalSoftwareKeyboardController.current
-        val scrollState = rememberScrollState()
-
-        Column (
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.verticalScroll(scrollState)
+    @OptIn(ExperimentalComposeUiApi::class)
+    @Composable
+    fun MegaScreen() {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         ) {
-            LoItemType(name = "Mega Sena")
+            val errorBest = stringResource(id = R.string.error_bets)
+            val errorNumbers = stringResource(id = R.string.error_numbers)
 
-            Text(
-                text = stringResource(id = R.string.announcement),
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(8.dp)
-            )
+            var qtdNumbers by remember { mutableStateOf("") }
+            var qtdBets by remember { mutableStateOf("") }
+            var result by remember { mutableStateOf("") }
+            var showAlertDialog by remember { mutableStateOf(false) }
 
-            LoNumberTextField(
-                value = qtdNumbers,
-                label = R.string.mega_rule,
-                placeholder = R.string.quantity,
-                ) {
-                if (it.length < 3) {
-                    qtdNumbers = validateInput(it)
-                }
-            }
+            val snackbarHostState by remember { mutableStateOf(SnackbarHostState()) }
+            val scope = rememberCoroutineScope()
+            val keyboardController = LocalSoftwareKeyboardController.current
+            val scrollState = rememberScrollState()
 
-            LoNumberTextField(
-                value = qtdBets,
-                label = R.string.bets,
-                placeholder = R.string.bets_quantity,
-                imeAction = ImeAction.Done
+            Column(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.verticalScroll(scrollState)
             ) {
-                if (it.length < 3) {
-                    qtdBets = validateInput(it)
-                }
-            }
+                LoItemType(name = "Mega Sena")
 
-            OutlinedButton(
-                enabled = qtdNumbers.isNotEmpty() && qtdBets.isNotEmpty(),
-                onClick = {
-                    val best = qtdBets.toInt()
-                    val numbers = qtdNumbers.toInt()
-                    if (best < 1 || best > 10) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(errorBest)
-                        }
-                    } else if (numbers< 6 || numbers > 15) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(errorNumbers)
-                        }
-                    } else {
+                Text(
+                    text = stringResource(id = R.string.announcement),
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(8.dp)
+                )
+
+                LoNumberTextField(
+                    value = qtdNumbers,
+                    label = R.string.mega_rule,
+                    placeholder = R.string.quantity,
+                ) {
+                    if (it.length < 3) {
+                        qtdNumbers = validateInput(it)
+                    }
+                }
+
+                LoNumberTextField(
+                    value = qtdBets,
+                    label = R.string.bets,
+                    placeholder = R.string.bets_quantity,
+                    imeAction = ImeAction.Done
+                ) {
+                    if (it.length < 3) {
+                        qtdBets = validateInput(it)
+                    }
+                }
+
+                OutlinedButton(
+                    enabled = qtdNumbers.isNotEmpty() && qtdBets.isNotEmpty(),
+                    onClick = {
+                        val best = qtdBets.toInt()
+                        val numbers = qtdNumbers.toInt()
+                        if (best < 1 || best > 10) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(errorBest)
+                            }
+                        } else if (numbers < 6 || numbers > 15) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar(errorNumbers)
+                            }
+                        } else {
                             result = ""
-                            for (i in  1.. best) {
+                            for (i in 1..best) {
                                 result += "[$i]"
                                 result += numberGenerator(numbers)
                                 result += "\n\n"
                             }
-                        showAlertDialog = true
-                    }
-                    keyboardController?.hide()
-                }) {
-                Text(stringResource(id = R.string.bets_generate))
+                            showAlertDialog = true
+                        }
+                        keyboardController?.hide()
+                    }) {
+                    Text(stringResource(id = R.string.bets_generate))
+                }
+
+                Text(text = result)
             }
 
-            Text(text = result)
-        }
+            Box {
+                SnackbarHost(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    hostState = snackbarHostState
+                )
+            }
 
-        Box {
-            SnackbarHost(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                hostState = snackbarHostState
-            )
-        }
-
-        if (showAlertDialog) {
-            AlertDialog(
-                onDismissRequest = {},
-                confirmButton = {
-                    TextButton(onClick = { showAlertDialog = false}) {
-                        Text(text = stringResource(id = android.R.string.ok))
+            if (showAlertDialog) {
+                AlertDialog(
+                    onDismissRequest = {},
+                    confirmButton = {
+                        TextButton(onClick = { showAlertDialog = false }) {
+                            Text(text = stringResource(id = android.R.string.ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showAlertDialog = false }) {
+                            Text(text = stringResource(id = android.R.string.cancel))
+                        }
+                    },
+                    title = {
+                        Text(text = stringResource(id = R.string.app_name))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.good_luck))
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAlertDialog = false}) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                },
-                title = {
-                    Text(text = stringResource(id = R.string.app_name))
-                },
-                text = {
-                    Text(text = stringResource(id = R.string.good_luck))
-                }
-            )
-        }
-    }
-}
-
-private fun numberGenerator(qtd: Int): String {
-    val numbers = mutableSetOf<Int>()
-
-    while (true) {
-        val n = Random.nextInt(60)
-        numbers.add(n + 1)
-        if (numbers.size == qtd ) {
-            break
+                )
+            }
         }
     }
 
-    return  numbers.joinToString(" - ")
-}
+    private fun numberGenerator(qtd: Int): String {
+        val numbers = mutableSetOf<Int>()
 
-private fun validateInput(input: String): String {
-    val filteredChar = input.filter { char ->
-        char in "0123456789"
+        while (true) {
+            val n = Random.nextInt(60)
+            numbers.add(n + 1)
+            if (numbers.size == qtd) {
+                break
+            }
+        }
+
+        return numbers.joinToString(" - ")
     }
-    return filteredChar
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LoteriaTheme {
-        HomeScreen { }
+    private fun validateInput(input: String): String {
+        val filteredChar = input.filter { char ->
+            char in "0123456789"
+        }
+        return filteredChar
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun FormPreview() {
-    LoteriaTheme {
-        FormScreen()
+    @Preview(showBackground = true)
+    @Composable
+    fun GreetingPreview() {
+        LoteriaTheme {
+            HomeScreen { }
+        }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun FormPreview() {
+        LoteriaTheme {
+            MegaScreen()
+        }
     }
 }
